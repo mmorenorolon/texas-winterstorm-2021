@@ -1,0 +1,102 @@
+---
+title: ": A Look at Houston's Winter Storm Blackouts"
+author: "Melannie Moreno Rolón"
+date: "2025-10-27"
+format:
+  html: 
+    code-fold: false
+editor: source
+execute: 
+  warning: false
+  message: false
+  results: false
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+# Import libraries
+library(tidyverse)
+library(tmap)
+library(terra)
+library(geodata)
+library(kableExtra)
+library(sf)
+```
+
+
+# README.md
+
+
+
+# Introduction
+
+Rapid changes in climate are leading to higher intensity and more frequent extreme weather events in recent years. If we look at the United States, there are many examples. One particular event that highlights this increasing pattern in weather events are the Feruary 2021 winter storms in Houston, Texas. For the first time in years, Houston experienced a mass scale power outage. A combination of extreme weather, grid isolation, and lack of winterization became the perfect storm that exposed Houston's underlying systemic issues. 
+
+This analysis aims to estimate the number of households in the Houston metropolitan area that resulted in loss of electricity service due to the extreme winter storms experienced in February 2021. 
+
+# Methods
+
+Key steps of this analysis include:
+
+1. Find locations that experienced a blackout by creating a mask
+2. Exclude highways from analysis
+3. Identify homes that experienced blackouts by combining the locations of homes and blackouts
+4. Identify the census tracts likely impacted by blackout
+
+# Data Analysis
+
+## Loading in Socioeconomic Data
+```{r}
+# Explore layers of geopackage
+st_layers(here::here("data", "ACS_2019_5YR_TRACT_48_TEXAS.gdb"))
+
+# Load 2019 socioeconomic census tract data
+census_tract <- st_read(here::here("data", "ACS_2019_5YR_TRACT_48_TEXAS.gdb"),
+                        layer = "ACS_2019_5YR_TRACT_48_TEXAS")
+
+# Load household income data
+
+income <- st_read(here::here("data", "ACS_2019_5YR_TRACT_48_TEXAS.gdb"), 
+                  layer = "X19_INCOME")
+
+# Join census tract data and income data
+census_income <- census_tract %>% left_join(income, by = "GEOID")
+```
+
+
+## Loading in Roads and Structures Data
+```{r}
+# Load roads data
+roads <- st_read(here::here("data", "gis_osm_roads_free_1.gpkg"))
+
+# Load houses data
+buildings <- st_read(here::here("data", "gis_osm_buildings_a_free_1.gpkg"))
+```
+
+## Loading in Rster Data
+
+```{r}
+# February 7 tiles
+tile_0705 <- rast(here::here("data", "VNP46A1",
+                             "VNP46A1.A2021038.h08v05.001.2021039064328.tif"))
+
+tile_0706 <- rast(here::here("data","VNP46A1",
+                  "VNP46A1.A2021038.h08v06.001.2021039064329.tif"))
+
+# February 16 tiles
+tile_1605 <- rast(here::here("data", "VNP46A1", "VNP46A1.A2021047.h08v05.001.2021048091106.tif"))
+
+tile_1606 <- rast(here::here("data", "VNP46A1",
+                             "VNP46A1.A2021047.h08v06.001.2021048091105.tif"))
+```
+
+```{r}
+# Check that crs matches between datasets
+# Refer to assignment 2
+```
+
+# Discussion
+
+# Conclusion
+
