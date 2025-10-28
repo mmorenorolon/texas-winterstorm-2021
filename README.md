@@ -22,7 +22,6 @@ C:.
     │       └───census tract gdb files
     │
     ├───gis_osm_roads_free_1.gpkg
-    │       gis_osm_roads_free_1.gpkg
     │
     └───VNP46A1
         └───VIIRS data files
