@@ -46,7 +46,7 @@ Key steps of this analysis include:
 
 # Data Analysis
 
-## Loading in Socioeconomic Data
+### Loading in Socioeconomic Data
 ```{r}
 # Explore layers of geopackage
 st_layers(here::here("data", "ACS_2019_5YR_TRACT_48_TEXAS.gdb"))
@@ -65,7 +65,7 @@ census_income <- census_tract %>% left_join(income, by = "GEOID")
 ```
 
 
-## Loading in Roads and Structures Data
+### Loading in Roads and Structures Data
 ```{r}
 # Load roads data
 roads <- st_read(here::here("data", "gis_osm_roads_free_1.gpkg"))
@@ -74,7 +74,7 @@ roads <- st_read(here::here("data", "gis_osm_roads_free_1.gpkg"))
 buildings <- st_read(here::here("data", "gis_osm_buildings_a_free_1.gpkg"))
 ```
 
-## Loading in Rster Data
+### Loading in Raster Data
 
 ```{r}
 # February 7 tiles
@@ -92,9 +92,107 @@ tile_1606 <- rast(here::here("data", "VNP46A1",
 ```
 
 ```{r}
-# Check that crs matches between datasets
-# Refer to assignment 2
+# View CRS of each object
+st_crs(buildings)
+st_crs(census_income)
+st_crs(roads)
+st_crs(tile_0705)
+st_crs(tile_0706)
+st_crs(tile_1605)
+st_crs(tile_1606)
 ```
+
+
+```{r}
+# Check that crs matches between datasets
+if(st_crs(buildings) != st_crs(census_income)){
+  warning("coordinate refrence systems do not match")
+  census_income <- st_transform(buildings, crs = st_crs(buildings))
+}
+```
+
+```{r}
+if(st_crs(census_income) == st_crs(buildings)){
+  print("it's a match!")
+} else {
+  print("still not a match")
+}
+```
+
+## Create Blackout Mask
+
+(Plot with `plot()` or `ggplot()` to confirm that the reclassified areas match expectations.)
+
+```{r}
+# create raster mask of the same resolution and extent
+rmask <- zion_elevation
+
+# set all cells with elevation less than 2000 meters to NA
+rmask[rmask < 2000] <- NA
+ 
+# subset elevation raster based on mask
+
+# approach 1: bracket subsetting
+masked1 <- zion_elevation[rmask, drop = FALSE]   
+# approach 2: mask() function
+masked2 <- mask(zion_elevation, rmask)
+```
+
+```{r}
+map1 <- tm_shape(zion_elevation) +
+  tm_raster(col.legend = tm_legend(title = "Elevation (m)"))+
+  tm_title(text = "original")+ 
+  tm_layout(meta.margins = c(.2, 0, 0, 0))
+
+map2 <- tm_shape(masked1) +
+  tm_raster(col.legend = tm_legend(title = "Elevation (m)"))+
+  tm_title(text = "bracket subsetting")+ 
+  tm_layout(meta.margins = c(.2, 0, 0, 0))
+
+map3 <- tm_shape(masked2) +
+  tm_raster(col.legend = tm_legend(title = "Elevation (m)"))+
+  tm_title(text = "mask()")+ 
+  tm_layout(meta.margins = c(.2, 0, 0, 0))
+
+tmap_arrange(map1, map2, map3, nrow = 1) 
+```
+
+### Compute the change in light intensity
+
+```{r}
+r_change <- r_after - r_before
+```
+
+### Reclassify to create the blackout mask 
+
+classify() or conditional logic (`ifel()` or `r_change[r_change > -200] <- NA`)
+
+The idea:
+
+- If the drop in brightness < 200 nW cm⁻² sr⁻¹ → assign NA
+
+- Otherwise → assign 1 (or TRUE) to indicate blackout
+
+### Convert to vector (polygonize)
+
+as.polygons() (from terra) or st_as_sf() (from sf)
+
+Then st_make_valid() to fix any invalid geometries.
+
+### Crop to Houston region
+
+You’ll use:
+
+vect() to make a bounding box with those coordinates:
+ext(-96.5, -94.5, 29, 30.5)
+crop() to spatially subset the blackout polygons.
+
+Only keep blackout polygons that fall inside the Houston area.
+
+### Reproject to EPSG:3083
+
+project() (if raster) or st_transform() (if sf object).
+Goal: Convert to the Texas Centric Albers Equal Area projection.
 
 # Discussion
 
