@@ -15,6 +15,7 @@ editor_options:
 ---
 
 ```{r}
+#| label: setup
 # Import libraries
 library(tidyverse)
 library(tmap)
@@ -22,6 +23,7 @@ library(terra)
 library(geodata)
 library(kableExtra)
 library(sf)
+library(stars)
 ```
 
 
@@ -31,7 +33,7 @@ library(sf)
 
 # Introduction
 
-Rapid changes in climate are leading to higher intensity and more frequent extreme weather events in recent years. If we look at the United States, there are many examples. One particular event that highlights this increasing pattern in weather events are the Feruary 2021 winter storms in Houston, Texas. For the first time in years, Houston experienced a mass scale power outage. A combination of extreme weather, grid isolation, and lack of winterization became the perfect storm that exposed Houston's underlying systemic issues. 
+Rapid changes in climate are leading to higher intensity and more frequent extreme weather events in recent years. If we look at the United States, there are many examples. One particular event that highlights this increasing pattern in weather events are the February 2021 winter storms in Houston, Texas. For the first time in years, Houston experienced a power outage of massive scale. A combination of extreme weather, grid isolation, and lack of winterization became the perfect storm that exposed Houston's underlying systemic issues. 
 
 This analysis aims to estimate the number of households in the Houston metropolitan area that resulted in loss of electricity service due to the extreme winter storms experienced in February 2021. 
 
@@ -39,7 +41,7 @@ This analysis aims to estimate the number of households in the Houston metropoli
 
 Key steps of this analysis include:
 
-1. Find locations that experienced a blackout by creating a mask
+1. Find locations that experienced a blackout
 2. Exclude highways from analysis
 3. Identify homes that experienced blackouts by combining the locations of homes and blackouts
 4. Identify the census tracts likely impacted by blackout
@@ -54,14 +56,17 @@ st_layers(here::here("data", "ACS_2019_5YR_TRACT_48_TEXAS.gdb"))
 # Load 2019 socioeconomic census tract data
 census_tract <- st_read(here::here("data", "ACS_2019_5YR_TRACT_48_TEXAS.gdb"),
                         layer = "ACS_2019_5YR_TRACT_48_TEXAS")
+names(census_tract)
 
 # Load household income data
-
 income <- st_read(here::here("data", "ACS_2019_5YR_TRACT_48_TEXAS.gdb"), 
                   layer = "X19_INCOME")
 
+names(income)
+
 # Join census tract data and income data
 census_income <- census_tract %>% left_join(income, by = "GEOID")
+names(census_income)
 ```
 
 
@@ -69,7 +74,7 @@ census_income <- census_tract %>% left_join(income, by = "GEOID")
 ```{r}
 # Load roads data
 roads <- st_read(here::here("data", "gis_osm_roads_free_1.gpkg"))
-
+roads
 # Load houses data
 buildings <- st_read(here::here("data", "gis_osm_buildings_a_free_1.gpkg"))
 ```
@@ -78,16 +83,17 @@ buildings <- st_read(here::here("data", "gis_osm_buildings_a_free_1.gpkg"))
 
 ```{r}
 # February 7 tiles
-tile_0705 <- rast(here::here("data", "VNP46A1",
+tile_0705 <- read_stars(here::here("data", "VNP46A1",
                              "VNP46A1.A2021038.h08v05.001.2021039064328.tif"))
 
-tile_0706 <- rast(here::here("data","VNP46A1",
+tile_0706 <- read_stars(here::here("data","VNP46A1",
                   "VNP46A1.A2021038.h08v06.001.2021039064329.tif"))
 
 # February 16 tiles
-tile_1605 <- rast(here::here("data", "VNP46A1", "VNP46A1.A2021047.h08v05.001.2021048091106.tif"))
+tile_1605 <- read_stars(here::here("data", "VNP46A1", "VNP46A1.A2021047.h08v05.001.2021048091106.tif"))
 
-tile_1606 <- rast(here::here("data", "VNP46A1",
+
+tile_1606 <- read_stars(here::here("data", "VNP46A1",
                              "VNP46A1.A2021047.h08v06.001.2021048091105.tif"))
 ```
 
@@ -95,6 +101,8 @@ tile_1606 <- rast(here::here("data", "VNP46A1",
 # View CRS of each object
 st_crs(buildings)
 st_crs(census_income)
+st_crs(census_tract)
+st_crs(income)
 st_crs(roads)
 st_crs(tile_0705)
 st_crs(tile_0706)
@@ -124,18 +132,40 @@ if(st_crs(census_income) == st_crs(buildings)){
 (Plot with `plot()` or `ggplot()` to confirm that the reclassified areas match expectations.)
 
 ```{r}
-# create raster mask of the same resolution and extent
-rmask <- zion_elevation
+# Merge raster objects 
+tile_07 <- st_mosaic(tile_0705, tile_0706)
+tile_16 <- st_mosaic(tile_1605, tile_1606)
+```
 
-# set all cells with elevation less than 2000 meters to NA
-rmask[rmask < 2000] <- NA
+```{r}
+# Compute the change in light intensity
+r_change <- tile_16 - tile_07
+```
+
+```{r}
+# create raster mask of the same resolution and extent
+rmask <- r_change
+
+# set all cells with light less than 200 to NA
+rmask[rmask < 200] <- NA
  
 # subset elevation raster based on mask
-
 # approach 1: bracket subsetting
-masked1 <- zion_elevation[rmask, drop = FALSE]   
+masked <- zion_elevation[rmask, drop = FALSE] 
+
 # approach 2: mask() function
 masked2 <- mask(zion_elevation, rmask)
+
+
+# Vectorize
+vector_masked_diff <- st_as_sf(masked)
+
+st_is_valid(vector_masked_diff)
+
+st_make_valid(vector_masked_diff)
+
+
+
 ```
 
 ```{r}
