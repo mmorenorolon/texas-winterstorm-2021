@@ -6,9 +6,6 @@ format:
   pdf: 
     code-fold: false
     number-sections: true
-    mainfont: "Arial"
-    fontsize: 12pt
-    geometry: margin=1in
 editor: source
 execute: 
   warning: false
@@ -31,9 +28,10 @@ library(here)
 
 
 ### README Preview
-The following image shows a preview of the project’s README file hosted on GitHub:
+The following image shows a preview of the project’s README file hosted on GitHub: 
 
 ![Preview of the project README showing project purpose, data sources, and acknowledgements.](images/README-screenshot.png)
+
 
 ## Introduction
 
@@ -54,9 +52,8 @@ Key steps of this analysis include:
 
 ### Import Socioeconomic Data
 ```{r}
+#|echo: false
 #|label: census-data
-# Explore layers of geo-database
-st_layers(here::here("data", "ACS_2019_5YR_TRACT_48_TEXAS.gdb"))
 
 # Load 2019 socioeconomic census tract data
 census_tracts <- st_read(here::here("data", "ACS_2019_5YR_TRACT_48_TEXAS.gdb"),
@@ -72,11 +69,11 @@ income <- st_read(here::here("data", "ACS_2019_5YR_TRACT_48_TEXAS.gdb"),
 #|label: rds-bldgs-data
 # Load roads data
 roads <- st_read(here::here("data", "gis_osm_roads_free_1.gpkg"),
-                 query = "SELECT * FROM gis_osm_roads_free_1 WHERE fclass='motorway'")
+                 query = "SELECT * FROM gis_osm_roads_free_1 WHERE fclass='motorway'", quiet = T)
 
 # Load houses data
 buildings <- st_read(here::here("data","gis_osm_buildings_a_free_1.gpkg"),
-  query = "SELECT * FROM gis_osm_buildings_a_free_1 WHERE (type IS NULL AND name IS NULL) OR type IN ('residential', 'apartments', 'house', 'static_caravan', 'detached')")
+  query = "SELECT * FROM gis_osm_buildings_a_free_1 WHERE (type IS NULL AND name IS NULL) OR type IN ('residential', 'apartments', 'house', 'static_caravan', 'detached')", quiet = T)
 ```
 
 ### Import Satellite Images
@@ -281,7 +278,7 @@ map_after <- tm_shape(r_after) +
                                            values = lights_pallete),
             col.legend = tm_legend(title = "Radiance (nW·cm⁻²·sr⁻¹)")) +
   tm_title(text = "Night lights after storm") +
-  tm_layout(legend.outside = TRUE, component.autoscale = FALSE) +
+  tm_layout(legend.outside = TRUE) +
   tm_grid(lwd = .3)
 
 # Combine
@@ -342,12 +339,9 @@ Grey areas represent detected blackout zones (excluding highways) and red points
 
 ```{r}
 #| label: vis3-census-blackouts
-# Check that CRS matches
-if (st_crs(blackout_not_highway) != st_crs(census_tracts)) {
-  message("Transforming blsckout to match census_income CRS...")
-  blackout_not_highway <- st_transform(blackout_not_highway, st_crs(census_tracts))
-}
 
+# Match CRS
+blackout_not_highway <- st_transform(blackout_not_highway, st_crs(census_tracts))
 
 if (st_crs(blackout_not_highway) == st_crs(census_income)) {
   message("CRS matches!")
@@ -356,9 +350,9 @@ if (st_crs(blackout_not_highway) == st_crs(census_income)) {
   }
 
 # Define the Houston bounding box (same extent you used before)
-houston_bbox <- st_as_sfc(st_bbox(
-  c(xmin = -96.5, xmax = -94.5, ymin = 29, ymax = 30.5),
-  crs = 4326)) %>%  
+houston_bbox <- st_as_sfc(st_bbox(c(xmin = -96.5, xmax = -94.5, 
+                                    ymin = 29, ymax = 30.5),
+                                  crs = 4326)) %>%
   st_transform(st_crs(census_tracts))
 
 # Crop the census tracts to the Houston area
@@ -367,13 +361,10 @@ census_houston <- st_crop(census_tracts, houston_bbox)
 # Identify census tracts in Houston that intersect blackout areas
 houston_blackout <- census_houston[st_intersects(census_houston, blackout_not_highway, sparse = FALSE), ]
 
-# Add a column indicating whether a census tract experienced a blackout
-census_houston$blackout <- "No"
-
-# For every census tract in Houston, check if its 'osm_id' appears in 'houston_blackout'
-census_houston$blackout <- ifelse(
-  census_houston$osm_id %in% houston_blackout$osm_id,
-  "Yes", "No")
+# Add "blackout" column and mark tracts as Yes/No based on intersection
+census_houston <- census_houston %>% 
+  mutate(blackout = ifelse(GEOID %in% 
+                             houston_blackout$GEOID, "Yes", "No"))
 
 # Plot the map
 ggplot() +
