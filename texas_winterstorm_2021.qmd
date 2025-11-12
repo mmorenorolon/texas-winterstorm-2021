@@ -30,11 +30,12 @@ library(here)
 ```
 
 
-# README.md
+### README Preview
+The following image shows a preview of the project’s README file hosted on GitHub:
 
+![Preview of the project README showing project purpose, data sources, and acknowledgements.](images/README-screenshot.png)
 
-
-# Introduction
+## Introduction
 
 Rapid changes in climate are leading to higher intensity and more frequent extreme weather events in recent years. If we look at the United States, there are many examples. One particular event that highlights this increasing pattern in weather events are the February 2021 winter storms in Houston, Texas. For the first time in years, Houston experienced a power outage of massive scale. A combination of extreme weather, grid isolation, and lack of winterization became the perfect storm that exposed Houston's underlying systemic issues. 
 

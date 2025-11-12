@@ -91,7 +91,7 @@ supported the completion of this project.
 
 ## Citations
 
-NASA Earth Science Division. (n.d.). Black Marble VIIRS Nighttime Lights (VNP46A1). Retrieved November 10, 2025, from https://blackmarble.gsfc.nasa.gov/
+NASA Earth Science Division. (2021). Black Marble VIIRS Nighttime Lights (VNP46A1). Retrieved November 10, 2025, from https://blackmarble.gsfc.nasa.gov/
 
 OpenStreetMap contributors. (n.d.). Texas OSM Roads and Buildings Data (Geofabrik). Retrieved November 10, 2025, from https://download.geofabrik.de/north-america/us/texas.html
 
