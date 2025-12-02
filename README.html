@@ -352,14 +352,35 @@ display: none;
 </div>
 
 
-<div id="title" class="section level1">
-<h1>Title</h1>
-<div id="overview" class="section level2">
-<h2>Overview</h2>
-<p>This repository contains the geospatial analysis of the 2021 Texas
-winter storms and resulting power outages in Houston. This project aims
-to estimate the number of homes affected and explore socioeconomic
-disparities in recovery.</p>
+<div id="ivestigating-the-2021-houston-winter-storm-blackouts" class="section level1">
+<h1>Ivestigating the 2021 Houston Winter Storm Blackouts</h1>
+<p><em>EDS 223: Geospatial Analysis &amp; Remote Sensing</em> <em>UCSB
+Masters of Environmental Data Science</em></p>
+<div id="purpose" class="section level2">
+<h2>Purpose</h2>
+<p>This repository contains the workflow, data, and outputs for Homework
+3 of EDS 223, completed by Melannie Moreno Rolón. The project analyzes
+the February 2021 winter storms in Houston, Texas, which caused
+widespread power outages. Using NASA VIIRS night-light data,
+OpenStreetMap building and road data, and U.S. Census socioeconomic
+data, the analysis estimates the spatial extent of blackouts, identifies
+affected residential areas, and examines the socioeconomic context of
+power loss. The workflow was conducted entirely in R and documented in a
+Quarto report integrating geospatial data analysis, raster operations,
+and vector-based overlay techniques.</p>
+</div>
+<div id="description-of-repository" class="section level2">
+<h2>Description of Repository</h2>
+<p>This repository contains spatial and statistical analyses exploring
+the impact of the February 2021 winter storms on power distribution and
+socioeconomic inequality in Houston, Texas. By comparing satellite
+imagery before and after the storms, the study identifies blackout
+areas, filters out non-residential and highway-adjacent regions, and
+estimates the number of homes likely affected. Census and income data
+are then used to evaluate whether blackout exposure varied across
+different income levels. The results are presented as a series of maps
+and a boxplot visualizing median household income distributions for
+tracts that did and did not experience blackouts.</p>
 </div>
 <div id="repository-structure" class="section level2">
 <h2>Repository Structure</h2>
@@ -379,11 +400,73 @@ disparities in recovery.</p>
     │       └───census tract gdb files
     │
     ├───gis_osm_roads_free_1.gpkg
-    │       gis_osm_roads_free_1.gpkg
     │
     └───VNP46A1
         └───VIIRS data files
 </code></pre>
+</div>
+<div id="data-access" class="section level2">
+<h2>Data Access</h2>
+<ul>
+<li><p><strong>NASA VIIRS Nighttime Lights (VNP46A1)</strong>: Daily
+radiance data downloaded from NASA’s Black Marble product suite. These
+data were used to measure changes in light intensity before and after
+the blackout (February 7 and February 16, 2021).</p></li>
+<li><p><strong>OpenStreetMap Roads and Buildings</strong>: Extracted
+from the OpenStreetMap (OSM) Geofabrik Texas dataset. Roads were
+filtered for fclass = ‘motorway’ to represent major highways, while
+buildings were filtered for residential types (e.g., house, apartments,
+detached).</p></li>
+<li><p><strong>U.S. Census ACS 2019 (5-Year Estimates)</strong>:
+Geodatabase sourced from the U.S. Census Bureau containing tract-level
+demographic and income information for the state of Texas. Median
+household income (variable B19013e1) was used to analyze socioeconomic
+differences in blackout exposure.</p></li>
+</ul>
+<p>To reproduce the analysis, ensure that the following R packages are
+installed: <code>sf</code>, <code>terra</code>, <code>tmap</code>,
+<code>tidyverse</code>, <code>here</code>, and
+<code>ggspatial</code>.</p>
+</div>
+<div id="acknowledgements" class="section level2">
+<h2>Acknowledgements</h2>
+<p>This project was made possible through the use of open-source spatial
+data and R-based geospatial analysis tools.</p>
+<ul>
+<li><p>NASA Black Marble VIIRS data were obtained from the NASA Earth
+Observations platform.</p></li>
+<li><p>OpenStreetMap data were accessed via Geofabrik’s open data
+repository.</p></li>
+<li><p>ACS 2019 Census Data were downloaded from the U.S. Census Bureau
+and accessed through the TIGER/Line shapefiles and geodatabase
+products.</p></li>
+</ul>
+<p>Special thanks to the developers of the R packages used in this
+analysis, including {sf}, {terra}, {tmap}, {ggspatial}, and {tidyverse},
+which enabled geospatial data processing, raster manipulation, and
+visualization in Quarto.</p>
+<p>This work was completed as part of EDS 223: Geospatial Analysis &amp;
+Remote Sensing at the University of California, Santa Barbara, under the
+guidance of course instructor Annie Adams and TA Alessandra Vidal Meza,
+whose feedback and teaching supported the completion of this
+project.</p>
+</div>
+<div id="citations" class="section level2">
+<h2>Citations</h2>
+<p>NASA Earth Science Division. (n.d.). Black Marble VIIRS Nighttime
+Lights (VNP46A1). Retrieved November 10, 2025, from <a href="https://blackmarble.gsfc.nasa.gov/" class="uri">https://blackmarble.gsfc.nasa.gov/</a></p>
+<p>OpenStreetMap contributors. (n.d.). Texas OSM Roads and Buildings
+Data (Geofabrik). Retrieved November 10, 2025, from <a href="https://download.geofabrik.de/north-america/us/texas.html" class="uri">https://download.geofabrik.de/north-america/us/texas.html</a></p>
+<p>U.S. Census Bureau. (2019). American Community Survey (ACS) 5-Year
+Estimates, 2019. Retrieved November 10, 2025, from <a href="https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-data.html" class="uri">https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-data.html</a></p>
+</div>
+<div id="author" class="section level2">
+<h2>Author</h2>
+<p>Melannie Moreno Rolón</p>
+</div>
+<div id="license" class="section level2">
+<h2>License</h2>
+<p>This repository is distributed under the MIT License</p>
 </div>
 </div>
 

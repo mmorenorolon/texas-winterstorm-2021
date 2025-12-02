@@ -2,14 +2,13 @@
 title: "A Look at Houston's Winter Storm Blackouts"
 author: "Melannie Moreno Rolón"
 date: last-modified
-format:
-  html: 
-    code-fold: false
-    number-sections: true
-    fig-dpi: 300
-    fig-width: 10
-    fig-height: 7
-    fig-align: center
+format: html
+code-fold: false
+number-sections: true
+fig-dpi: 300
+fig-width: 10
+fig-height: 7
+fig-align: center
 editor: source
 execute: 
   warning: false
@@ -242,8 +241,12 @@ are approximately `r num_affected`.
 income_clean <- income %>%
   # Remove geometries (there is not but just in case)
   st_drop_geometry() %>%
+  
   # Remove last 10 characters so that they match with 
   #the census tract's GEOID value format
+
+  # Remove last 10 characters so that they match with census tract's GEOID value format
+
   mutate(GEOID = substr(GEOID, nchar(GEOID) - 10, nchar(GEOID))) %>%
   select(GEOID, MEDIAN_HH_INC = B19013e1)
 
@@ -263,8 +266,13 @@ census_blackout <- census_income[st_intersects(census_income, blackout_not_highw
 
 # Add blackout status column
 census_income <- census_income %>%
+
   # Add a new column 'blackout' to indicate whether each census tract's
   # GEOID appears in the list of tracts that intersect blackout areas 
+
+  # Add a new column 'blackout' 
+  # Indicates whether each census tract's GEOID appears in the list of tracts that intersect blackout areas 
+
   # (Yes = experienced blackout, No = did not)
   mutate(blackout = ifelse(GEOID %in% census_blackout$GEOID, "Yes", "No"))
 
@@ -372,6 +380,7 @@ houston_blackout <- census_houston[st_intersects(census_houston, blackout_not_hi
 census_houston <- census_houston %>% 
   mutate(blackout = ifelse(GEOID %in% 
                              houston_blackout$GEOID, "Yes", "No"))
+
 
 # Map census tracts in Houston that experienced blackouts
 tm_shape(census_houston) +
